@@ -43,6 +43,8 @@ echo "Executando migrações do banco de dados..."
 php artisan migrate --force
 # ---------------------------------
 
+php artisan db:seed
+
 echo "Iniciando o Laravel Octane..."
 # Executes the final Octane command and keeps the container running
 exec php artisan octane:start --server=swoole --host=0.0.0.0 --port=8000 --watch
