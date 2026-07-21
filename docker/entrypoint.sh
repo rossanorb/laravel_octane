@@ -38,8 +38,11 @@ if [ ! -f "database/database.sqlite" ]; then
     touch database/database.sqlite
 fi
 
-echo "Executando migrações do banco de dados..."
-php artisan migrate --force
+# Roda as migrações apenas se a tabela 'migrations' ainda não existir no SQLite
+if ! php artisan db:show --database=sqlite > /dev/null 2>&1 || [ -z "$(php artisan db:table migrations --database=sqlite 2>/dev/null)" ]; then
+    echo "Executando migrações do banco de dados..."
+    php artisan migrate --force
+fi
 # ---------------------------------
 
 echo "Iniciando o Laravel Octane..."
