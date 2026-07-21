@@ -6,6 +6,19 @@ if [ ! -d "vendor" ]; then
     composer install --no-interaction
 fi
 
+# Se o arquivo .env não existir, cria a partir do .env.example
+if [ ! -f .env ]; then
+    echo "Criando arquivo .env..."
+    cp .env.example .env
+fi
+
+# Se a APP_KEY estiver vazia ou ausente, gera uma nova chave
+if ! grep -q "^APP_KEY=base64:" .env || [ -z "$(grep '^APP_KEY=' .env | cut -d '=' -f 2)" ]; then
+    echo "Gerando chave da aplicação (APP_KEY)..."
+    php artisan key:generate --no-interaction
+fi
+# ---------------------------------
+
 # Se o pacote do Octane não estiver no composer.json, instala ele
 if ! grep -q "laravel/octane" composer.json; then
     echo "Instalando Laravel Octane..."
@@ -17,6 +30,17 @@ if [ ! -f "config/octane.php" ]; then
     echo "Configurando Laravel Octane com Swoole..."
     php artisan octane:install --server=swoole --no-interaction
 fi
+
+# Garante que a pasta database existe e cria o arquivo sqlite vazio se não existir
+if [ ! -f "database/database.sqlite" ]; then
+    echo "Criando arquivo SQLite padrão..."
+    mkdir -p database
+    touch database/database.sqlite
+fi
+
+echo "Executando migrações do banco de dados..."
+php artisan migrate --force
+# ---------------------------------
 
 echo "Iniciando o Laravel Octane..."
 # Executa o comando final do Octane e mantém o container rodando
